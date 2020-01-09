@@ -1,13 +1,15 @@
-Summary: Utility to administer the Linux Virtual Server
 Name: ipvsadm
+Summary: Utility to administer the Linux Virtual Server
 Version: 1.26
-Release: 2%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
-Group: Applications/System
 URL: http://www.linuxvirtualserver.org/software/ipvs.html
+Group: Applications/System
+
 Source0: http://www.linuxvirtualserver.org/software/kernel-2.6/ipvsadm-%{version}.tar.gz
 Source1: ipvsadm.init
 Source2: ipvsadm-config
+
 Patch0: ipvsadm-1.26-fix-pe-option-checks.patch
 Patch1: ipvsadm-1.26-fallback-libpopt-on-shared-object.patch
 Patch2: ipvsadm-1.26-fix-buffer-overrun-ipvs_dests_parse_cb.patch
@@ -17,16 +19,20 @@ Patch5: ipvsadm-1.26-fix-netlink-init-ip_vs-module-not-loaded.patch
 Patch6: ipvsadm-1.26-fix-format-o-option-print_service_entry.patch
 Patch7: ipvsadm-1.26-show-ops-flag-regardless-service-persistence.patch
 Patch8: ipvsadm-1.26-keep-uppercase-o-option-rhel.patch
-BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
-Buildrequires: libnl-devel
-Buildrequires: popt-devel
+Patch9: ipvsadm-1.26-fix-svc-pe_name-conditional.patch
+Patch10: ipvsadm-1.26-fix-list-daemon-show-backup-daemon.patch
+
 Requires(post): /sbin/chkconfig
 Requires(preun): /sbin/chkconfig
+
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
+
+Buildrequires: libnl-devel
+Buildrequires: popt-devel
 
 %description
 ipvsadm is a utility to administer the IP Virtual Server services
 offered by the Linux kernel.
-
 
 %prep
 %setup -q
@@ -39,12 +45,12 @@ offered by the Linux kernel.
 %patch6 -p1
 %patch7 -p1
 %patch8 -p1
-
+%patch9 -p1
+%patch10 -p1
 
 %build
 # Don't use _smp_mflags as it makes the build fail (1.2.4)
 CFLAGS="%{optflags}" make
-
 
 %install
 rm -rf %{buildroot}
@@ -58,7 +64,6 @@ install -p -m 0600 %{SOURCE2} %{buildroot}/etc/sysconfig/ipvsadm-config
 %clean
 rm -rf %{buildroot}
 
-
 %post
 /sbin/chkconfig --add ipvsadm
 
@@ -66,7 +71,6 @@ rm -rf %{buildroot}
 if [ $1 -eq 0 ]; then
     /sbin/chkconfig --del ipvsadm
 fi
-
 
 %files
 %defattr(-,root,root)
@@ -80,8 +84,13 @@ fi
 %{_mandir}/man8/ipvsadm-restore.8*
 %{_mandir}/man8/ipvsadm-save.8*
 
-
 %changelog
+* Fri May 23 2014 Ryan O'Hara <rohara@redhat.com> 1.26-4
+- Fix list_daemon to show backup daemon (#1099687)
+
+* Fri May 23 2014 Ryan O'Hara <rohara@redhat.com> 1.26-3
+- Fix svc->pe_name-conditional (#1026518)
+
 * Fri Jul 26 2013 Ryan O'Hara <rohara@redhat.com> 1.26-2
 - Include upstream patches with rebase to version 1.26 (#986189)
 
