@@ -1,19 +1,22 @@
 Summary: Utility to administer the Linux Virtual Server
 Name: ipvsadm
-Version: 1.25
-Release: 10%{?dist}
+Version: 1.26
+Release: 2%{?dist}
 License: GPLv2+
 Group: Applications/System
 URL: http://www.linuxvirtualserver.org/software/ipvs.html
 Source0: http://www.linuxvirtualserver.org/software/kernel-2.6/ipvsadm-%{version}.tar.gz
 Source1: ipvsadm.init
 Source2: ipvsadm-config
-Patch0: ipvsadm-1.25-makefile.patch
-Patch1: ipvsadm-1.25-popt.patch
-Patch2: ipvsadm-001-activeconn.patch
-Patch3: ipvsadm-002-ops.patch
-Patch4: ipvsadm-003-ops-man.patch
-Patch5: ipvsadm-1.25-list-daemon.patch
+Patch0: ipvsadm-1.26-fix-pe-option-checks.patch
+Patch1: ipvsadm-1.26-fallback-libpopt-on-shared-object.patch
+Patch2: ipvsadm-1.26-fix-buffer-overrun-ipvs_dests_parse_cb.patch
+Patch3: ipvsadm-1.26-always-link-against-libpopt.patch
+Patch4: ipvsadm-1.26-fix-list_daemon-master-backup-status.patch
+Patch5: ipvsadm-1.26-fix-netlink-init-ip_vs-module-not-loaded.patch
+Patch6: ipvsadm-1.26-fix-format-o-option-print_service_entry.patch
+Patch7: ipvsadm-1.26-show-ops-flag-regardless-service-persistence.patch
+Patch8: ipvsadm-1.26-keep-uppercase-o-option-rhel.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 Buildrequires: libnl-devel
 Buildrequires: popt-devel
@@ -33,6 +36,9 @@ offered by the Linux kernel.
 %patch3 -p1
 %patch4 -p1
 %patch5 -p1
+%patch6 -p1
+%patch7 -p1
+%patch8 -p1
 
 
 %build
@@ -76,6 +82,12 @@ fi
 
 
 %changelog
+* Fri Jul 26 2013 Ryan O'Hara <rohara@redhat.com> 1.26-2
+- Include upstream patches with rebase to version 1.26 (#986189)
+
+* Fri Jul 26 2013 Ryan O'Hara <rohara@redhat.com> 1.26-1
+- Rebase to upstream version 1.26 (#986189)
+
 * Fri Feb 17 2012 Ryan O'Hara <rohara@redhat.com> 1.25-10
 - Fix list_daemon to not assume sync daemon status is ordered (#788529)
 
