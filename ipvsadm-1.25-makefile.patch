@@ -1,7 +1,6 @@
-diff -Naupr ipvsadm-1.24.orig/Makefile ipvsadm-1.24/Makefile
---- ipvsadm-1.24.orig/Makefile	2004-01-10 10:39:03.000000000 +0100
-+++ ipvsadm-1.24/Makefile	2007-08-24 16:08:21.000000000 +0200
-@@ -87,16 +87,15 @@ ipvsadm:	$(OBJS) $(STATIC_LIBS)
+--- ipvsadm-1.25.orig/Makefile	2012-02-17 19:59:40.149108761 -0600
++++ ipvsadm-1.25/Makefile	2012-02-17 20:00:03.282277247 -0600
+@@ -92,16 +92,15 @@
  
  install:        all
  		if [ ! -d $(SBIN) ]; then $(MKDIR) -p $(SBIN); fi

@@ -1,18 +1,19 @@
 Summary: Utility to administer the Linux Virtual Server
 Name: ipvsadm
 Version: 1.25
-Release: 9%{?dist}
+Release: 10%{?dist}
 License: GPLv2+
 Group: Applications/System
 URL: http://www.linuxvirtualserver.org/software/ipvs.html
 Source0: http://www.linuxvirtualserver.org/software/kernel-2.6/ipvsadm-%{version}.tar.gz
 Source1: ipvsadm.init
 Source2: ipvsadm-config
-Patch0: ipvsadm-1.24-Makefile.patch
+Patch0: ipvsadm-1.25-makefile.patch
 Patch1: ipvsadm-1.25-popt.patch
 Patch2: ipvsadm-001-activeconn.patch
 Patch3: ipvsadm-002-ops.patch
 Patch4: ipvsadm-003-ops-man.patch
+Patch5: ipvsadm-1.25-list-daemon.patch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 Buildrequires: libnl-devel
 Buildrequires: popt-devel
@@ -31,6 +32,7 @@ offered by the Linux kernel.
 %patch2 -p1
 %patch3 -p1
 %patch4 -p1
+%patch5 -p1
 
 
 %build
@@ -74,6 +76,9 @@ fi
 
 
 %changelog
+* Fri Feb 17 2012 Ryan O'Hara <rohara@redhat.com> 1.25-10
+- Fix list_daemon to not assume sync daemon status is ordered (#788529)
+
 * Wed Jul 07 2010 Jan Friesse <jfriesse@redhat.com> 1.25-9
 - Add man page for One-Packet Scheduler (#573112).
 
