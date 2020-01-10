@@ -1,7 +1,7 @@
 Name: ipvsadm
 Summary: Utility to administer the Linux Virtual Server
 Version: 1.27
-Release: 4%{?dist}
+Release: 7%{?dist}
 License: GPLv2+
 Group: Applications/System
 URL: https://kernel.org/pub/linux/utils/kernel/ipvsadm/
@@ -9,6 +9,9 @@ URL: https://kernel.org/pub/linux/utils/kernel/ipvsadm/
 Source0: https://kernel.org/pub/linux/utils/kernel/ipvsadm/%{name}-%{version}.tar.gz
 Source1: ipvsadm.service
 Source2: ipvsadm-config
+
+Patch0: ipvsadm-show-backup-daemon.patch
+Patch1: ipvsadm-fix-compile-warnings.patch
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 Buildrequires: libnl3-devel
@@ -21,13 +24,24 @@ Requires(postun): systemd
 Requires(post): systemd-sysv
 
 %description
-ipvsadm is a utility to administer the IP Virtual Server services
-offered by the Linux kernel.
+ipvsadm is used to setup, maintain, and inspect the virtual server
+table in the Linux kernel. The Linux Virtual Server can be used to
+build scalable network services based on a cluster of two or more
+nodes. The active node of the cluster redirects service requests to a
+collection of server hosts that will actually perform the
+services. Supported Features include:
+  - two transport layer (layer-4) protocols (TCP and UDP)
+  - three packet-forwarding methods (NAT, tunneling, and direct routing)
+  - eight load balancing algorithms (round robin, weighted round robin,
+    least-connection, weighted least-connection, locality-based
+    least-connection, locality-based least-connection with
+    replication, destination-hashing, and source-hashing)
 
 
 %prep
 %setup -q
-
+%patch0 -p1
+%patch1 -p0
 
 %build
 # Don't use _smp_mflags as it makes the build fail (1.2.4)
@@ -35,18 +49,18 @@ CFLAGS="%{optflags}" make
 
 
 %install
-rm -rf %{buildroot}
-mkdir -p %{buildroot}/etc/rc.d/init.d
-make install BUILD_ROOT=%{buildroot} MANDIR=%{_mandir}
+%{__rm} -rf %{buildroot}
+%{__mkdir_p} %{buildroot}/etc/rc.d/init.d
+%{__make} install BUILD_ROOT=%{buildroot}%{_prefix} SBIN=%{buildroot}%{_sbindir} MANDIR=%{buildroot}%{_mandir} MAN=%{buildroot}%{_mandir}/man8 INIT=%{buildroot}%{_sysconfdir}/rc.d/init.d
 # Remove the provided init script
-rm -f %{buildroot}/etc/rc.d/init.d/ipvsadm
-install -D -p -m 0644 %{SOURCE1} %{buildroot}%{_unitdir}/ipvsadm.service
+%{__rm} -f %{buildroot}%{_sysconfdir}/rc.d/init.d/ipvsadm
+%{__install} -D -p -m 0644 %{SOURCE1} %{buildroot}%{_unitdir}/ipvsadm.service
 # Install config file which controls the service behavior
-install -D -p -m 0600 %{SOURCE2} %{buildroot}/etc/sysconfig/ipvsadm-config
+%{__install} -D -p -m 0600 %{SOURCE2} %{buildroot}/etc/sysconfig/ipvsadm-config
 
 
 %clean
-rm -rf %{buildroot}
+%{__rm} -rf %{buildroot}
 
 
 %post
@@ -70,19 +84,28 @@ rm -rf %{buildroot}
 /bin/systemctl try-restart ipvsadm.service >/dev/null 2>&1 || :
 
 %files
-%defattr(-,root,root)
+%defattr(-,root,root,-)
 %doc README
 %{_unitdir}/ipvsadm.service
 %config(noreplace) /etc/sysconfig/ipvsadm-config
-/sbin/ipvsadm
-/sbin/ipvsadm-restore
-/sbin/ipvsadm-save
+%{_sbindir}/ipvsadm
+%{_sbindir}/ipvsadm-restore
+%{_sbindir}/ipvsadm-save
 %{_mandir}/man8/ipvsadm.8*
 %{_mandir}/man8/ipvsadm-restore.8*
 %{_mandir}/man8/ipvsadm-save.8*
 
 
 %changelog
+* Tue Sep 30 2014 Ryan O'Hara <rohara@redhat.com> - 1.27-7
+- Improve package description (#1067144)
+
+* Tue Sep 30 2014 Ryan O'Hara <rohara@redhat.com> - 1.27-6
+- Cleanup specfile and install to _sbindir (#1067674)
+
+* Tue Jul 08 2014 Ryan O'Hara <rohara@redhat.com> - 1.27-5
+- Fix list_daemon to show backup daemon (#1099689)
+
 * Mon Jan 27 2014 Ryan O'Hara <rohara@redhat.com> - 1.27-4
 - Link with libnl3 (#1054970)
 
@@ -197,10 +220,10 @@ rm -rf %{buildroot}
 * Fri Jun 13 2003 Mike McLean <mikem@redhat.com> 1.21-8
 - dropping ppc from excluded arches
 
-* Thu Apr 4 2003 Mike McLean <mikem@redhat.com> 1.21-7
+* Fri Apr 4 2003 Mike McLean <mikem@redhat.com> 1.21-7
 - changing %%ExcludeArch
 
-* Thu Apr 4 2003 Mike McLean <mikem@redhat.com> 1.21-6
+* Fri Apr 4 2003 Mike McLean <mikem@redhat.com> 1.21-6
 - added BuildRequires: kernel-source
 - escaped all %% characters in %%changelog
 
@@ -212,7 +235,7 @@ rm -rf %{buildroot}
 - Argh,.. %%docdir was defined which overrode what I'd
   intended to happen
 
-* Tue Aug 1 2002 Philip Copeland <bryce@redhat.com>
+* Thu Aug 1 2002 Philip Copeland <bryce@redhat.com>
 - Ah... the manuals were being pushed into /usr/man
   instead of /usr/share/man. Fixed.
 
@@ -220,17 +243,17 @@ rm -rf %{buildroot}
 - Minor Makefile tweak so that we do a minimal hunt for to find
   the ip_vs.h file location
 
-* Thu Dec 16 2001 Wensong Zhang <wensong@linuxvirtualserver.org>
+* Sun Dec 16 2001 Wensong Zhang <wensong@linuxvirtualserver.org>
 - Changed to install ipvsadm man pages according to the %%{_mandir}
 
-* Thu Dec 30 2000 Wensong Zhang <wensong@linuxvirtualserver.org>
+* Sat Dec 30 2000 Wensong Zhang <wensong@linuxvirtualserver.org>
 - update the %%file section
 
-* Thu Dec 17 2000 Wensong Zhang <wensong@linuxvirtualserver.org>
+* Sun Dec 17 2000 Wensong Zhang <wensong@linuxvirtualserver.org>
 - Added a if-condition to keep both new or old rpm utility building
   the package happily.
 
-* Tue Dec 12 2000 P.opeland <bryce@redhat.com>
+* Tue Dec 12 2000 P.Copeland <bryce@redhat.com>
 - Small modifications to make the compiler happy in RH7 and the Alpha
 - Fixed the documentation file that got missed off in building
   the rpm

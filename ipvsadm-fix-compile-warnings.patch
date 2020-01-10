@@ -1,0 +1,27 @@
+--- ipvsadm.c.orig	2013-09-06 04:37:27.000000000 -0400
++++ ipvsadm.c	2014-02-21 03:10:36.117000000 -0500
+@@ -1240,14 +1240,13 @@
+ 	char *argv[] = { "/sbin/modprobe", "--", "ip_vs", NULL };
+ 	int child;
+ 	int status;
+-	int rc;
+ 
+ 	if (!(child = fork())) {
+ 		execv(argv[0], argv);
+ 		exit(1);
+ 	}
+ 
+-	rc = waitpid(child, &status, 0);
++	waitpid(child, &status, 0);
+ 
+ 	if (!WIFEXITED(status) || WEXITSTATUS(status)) {
+ 		return 1;
+@@ -1429,7 +1428,7 @@
+ static void print_largenum(unsigned long long i, unsigned int format)
+ {
+ 	char mytmp[32];
+-	size_t len;
++	int len;
+ 
+ 	if (format & FMT_EXACT) {
+ 		len = snprintf(mytmp, 32, "%llu", i);
