@@ -1,7 +1,7 @@
 Name: ipvsadm
 Summary: Utility to administer the Linux Virtual Server
 Version: 1.27
-Release: 1%{?dist}
+Release: 4%{?dist}
 License: GPLv2+
 Group: Applications/System
 URL: https://kernel.org/pub/linux/utils/kernel/ipvsadm/
@@ -11,7 +11,7 @@ Source1: ipvsadm.service
 Source2: ipvsadm-config
 
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
-Buildrequires: libnl-devel
+Buildrequires: libnl3-devel
 Buildrequires: popt-devel
 BuildRequires: systemd
 Requires(post): systemd
@@ -83,6 +83,15 @@ rm -rf %{buildroot}
 
 
 %changelog
+* Mon Jan 27 2014 Ryan O'Hara <rohara@redhat.com> - 1.27-4
+- Link with libnl3 (#1054970)
+
+* Fri Jan 24 2014 Daniel Mach <dmach@redhat.com> - 1.27-3
+- Mass rebuild 2014-01-24
+
+* Fri Dec 27 2013 Daniel Mach <dmach@redhat.com> - 1.27-2
+- Mass rebuild 2013-12-27
+
 * Fri Sep 06 2013 Ryan O'Hara <rohara@redhat.com> - 1.27-1
 - Update to 1.27
 
